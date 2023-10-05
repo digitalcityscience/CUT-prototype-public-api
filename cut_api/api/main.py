@@ -40,9 +40,14 @@ async def health_check():
     return "ok"
 
 
-# NOISE_API_BASE_URL = "http://localhost:8000/docs"
-
-ROUTING_TABLE = {"noise": "http://localhost:8000"}
+ROUTING_TABLE = {
+    "auth": "http://localhost:8001",
+    "resources": "http://localhost:8001",
+    "noise": "http://localhost:8002",
+    "water": "http://localhost:8003",
+    # "wind": "http://localhost:8001",
+    # "pedestrians": "http://localhost:8001",
+}
 
 
 @app.middleware("http")
@@ -56,32 +61,23 @@ async def custom_reverse_proxy(request: Request, call_next):
     target_server_name = request_path.split("/")[1]
     print(f"target server name is {target_server_name}")
 
-    target_endpoint = request_path.replace(f"/{target_server_name}", "").replace(
-        "/", ""
-    )
-    print(f"target endpoint name is {target_endpoint}")
+    if target_server_url := ROUTING_TABLE.get(target_server_name):
+        print(f"Target server URL is {target_server_url}")
 
-    target_server_url = ROUTING_TABLE.get(target_server_name)
-    print(f"target server url is {target_endpoint}")
+        target_url = f"{target_server_url}{request_path}"
+        print(f"Target endpoint is {target_url}")
 
-    target_url = f"{target_server_url}/{target_endpoint}"
-    print(f"target url is {target_url}")
+        async with httpx.AsyncClient() as client:
+            response = await client.request(
+                request.method, target_url, data=await request.body()
+            )
 
-    async with httpx.AsyncClient() as client:
-        response = await client.request(
-            request.method, target_url, data=await request.body()
-        )
-
-        return Response(
-            content=response.content,
-            status_code=response.status_code,
-            headers=response.headers,
-        )
-
-
-@app.get("/noise/docs")
-async def test_proxy():
-    pass
+            return Response(
+                content=response.content,
+                status_code=response.status_code,
+                headers=response.headers,
+            )
+    return await call_next(request)
 
 
 if __name__ == "__main__":
