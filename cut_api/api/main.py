@@ -67,6 +67,7 @@ ROUTING_TABLE = {
 
 
 # Endpoints:
+
 # POST /noise/v2/tasks
 # GET  /noise/v2/tasks/{task_id}
 # GET  /noise/v2/tasks/{task_id}/status
@@ -75,17 +76,29 @@ ROUTING_TABLE = {
 # GET  /water/v2/tasks/{task_id}
 # GET  /water/v2/tasks/{task_id}/status
 
+# POST /abm/v2/tasks
+# GET  /abm/v2/tasks/{task_id}
+# GET  /abm/v2/tasks/{task_id}/status
+
 # POST /wind/v2/tasks
 # GET  /wind/v2/tasks/{task_id}
 # GET  /wind/v2/tasks/{task_id}/status
 # POST /wind/v2/grouptasks/{group_task_id}
 
-
+# TODO jobs/{job_id}/results
 # TODO validate endpoint
+# TODO pygeo api
+# TODO conversion between PNG and GEOJSON
 
 
 @app.middleware("http")
 async def custom_reverse_proxy(request: Request, call_next):
+    if not await LIMITER.can_pass_request(request, rate_per_minute=1):
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            content=CutApiErrorResponse(message="Request limit reached.").dict(),
+        )
+
     request_path = request.url.path
     print(f"Request path is {request_path}")
 
@@ -102,6 +115,7 @@ async def custom_reverse_proxy(request: Request, call_next):
         print(f"Target endpoint is {target_url}")
 
         async with httpx.AsyncClient() as client:
+            # TODO if token - here all requests must have a token though - but handle errors
             token = request.headers.get("authorization").replace("Bearer ", "")
             try:
                 user = authorise_request(token)

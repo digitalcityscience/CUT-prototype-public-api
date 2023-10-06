@@ -2,7 +2,7 @@ from pydantic import BaseSettings, Field
 
 
 class RateLimiter(BaseSettings):
-    default_limit: str = Field(..., env="RATE_LIMITER_DEFAULT_LIMIT")
+    default_limit: int = Field(..., env="RATE_LIMITER_DEFAULT_LIMIT_PER_MINUTE")
     # if limit by user is set to false, the rate limiter will limit by IP
     limit_by_user: bool = Field(False, env="RATE_LIMITER_BY_USER")
 
