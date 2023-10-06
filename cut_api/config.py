@@ -34,6 +34,10 @@ class CacheRedis(BaseSettings):
         return f"{self.redis_url}/1"
 
 
+class Auth(BaseSettings):
+    token_signing_key: str = Field(..., env="TOKEN_SIGNING_KEY", min_length=1)
+
+
 class Settings(BaseSettings):
     title: str = Field(..., env="APP_TITLE")
     description: str = Field(..., env="APP_DESCRIPTION")
@@ -43,6 +47,7 @@ class Settings(BaseSettings):
     port: int = Field(..., env="APP_PORT")
     limiter: RateLimiter = Field(default_factory=RateLimiter)
     cache: CacheRedis = Field(default_factory=CacheRedis)
+    auth: Auth = Field(default_factory=Auth)
 
 
 settings = Settings()

@@ -1,13 +1,29 @@
+from typing import Optional
+
 import httpx
 import uvicorn
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
+from cut_api.auth.tokens import AuthError, authorise_request
 from cut_api.config import settings
 from cut_api.dependencies import LIMITER
+
+
+class CutApiErrorResponse(BaseModel):
+    message: str
+    details: Optional[dict]
+
+    @classmethod
+    def internal_error(cls):
+        # don't provide internal error details to external clients
+        return cls(message="internal error")
+
 
 app = FastAPI(
     title=settings.title,
@@ -50,6 +66,24 @@ ROUTING_TABLE = {
 }
 
 
+# Endpoints:
+# POST /noise/v2/tasks
+# GET  /noise/v2/tasks/{task_id}
+# GET  /noise/v2/tasks/{task_id}/status
+
+# POST /water/v2/tasks
+# GET  /water/v2/tasks/{task_id}
+# GET  /water/v2/tasks/{task_id}/status
+
+# POST /wind/v2/tasks
+# GET  /wind/v2/tasks/{task_id}
+# GET  /wind/v2/tasks/{task_id}/status
+# POST /wind/v2/grouptasks/{group_task_id}
+
+
+# TODO validate endpoint
+
+
 @app.middleware("http")
 async def custom_reverse_proxy(request: Request, call_next):
     request_path = request.url.path
@@ -68,15 +102,25 @@ async def custom_reverse_proxy(request: Request, call_next):
         print(f"Target endpoint is {target_url}")
 
         async with httpx.AsyncClient() as client:
-            response = await client.request(
-                request.method, target_url, data=await request.body()
-            )
+            token = request.headers.get("authorization").replace("Bearer ", "")
+            try:
+                user = authorise_request(token)
+                print(user)
 
-            return Response(
-                content=response.content,
-                status_code=response.status_code,
-                headers=response.headers,
-            )
+                response = await client.request(
+                    request.method, target_url, data=await request.body()
+                )
+
+                return Response(
+                    content=response.content,
+                    status_code=response.status_code,
+                    headers=response.headers,
+                )
+            except AuthError as exc:
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content=CutApiErrorResponse(message=exc.message).dict(),
+                )
     return await call_next(request)
 
 
