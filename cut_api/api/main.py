@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 import httpx
 import requests
@@ -7,23 +6,13 @@ import uvicorn
 from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 
+from cut_api.api.responses import CutApiErrorResponse
 from cut_api.auth.tokens import AuthError
 from cut_api.config import settings
 from cut_api.dependencies import LIMITER, authorise_request
 
 logger = logging.getLogger(__name__)
-
-
-class CutApiErrorResponse(BaseModel):
-    message: str
-    details: Optional[dict]
-
-    @classmethod
-    def internal_error(cls):
-        # don't provide internal error details to external clients
-        return cls(message="internal error")
 
 
 app = FastAPI(

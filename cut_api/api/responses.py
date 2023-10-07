@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class UserApiErrorResponse(BaseModel):
+class CutApiErrorResponse(BaseModel):
     message: str
     details: Optional[dict]
 
