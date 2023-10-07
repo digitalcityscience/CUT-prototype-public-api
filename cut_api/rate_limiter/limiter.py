@@ -4,6 +4,8 @@ from limits import RateLimitItem, RateLimitItemPerMinute, storage, strategies
 from starlette.requests import Request
 
 
+# Default limiter limits requets by IP, if requests need to be
+# limited by user_id, the identifier callback func needs to be altered
 async def _default_identifier(request: Request) -> str:
     return request.client.host
 

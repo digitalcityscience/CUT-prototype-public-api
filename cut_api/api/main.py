@@ -1,6 +1,7 @@
 from typing import Optional
 
 import httpx
+import requests
 import uvicorn
 from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,6 +49,8 @@ async def health_check():
     return "ok"
 
 
+REQUEST_EVENTS_URL = "http://localhost:8001/request_events"
+
 # If target server is not present in this routing table
 # the API will return a 404 - Not Found
 ROUTING_TABLE = {
@@ -84,6 +87,25 @@ ROUTING_TABLE = {
 # TODO conversion between PNG and GEOJSON
 
 
+async def register_request_event(token: str, endpoint: str) -> None:
+    try:
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",  # Set the content type as needed
+        }
+        response = requests.post(
+            REQUEST_EVENTS_URL, json={"endpoint_called": endpoint}, headers=headers
+        )
+        if response.status_code == 200:
+            print("Request was successful!")
+            print("Response:")
+            print(response.text)
+        else:
+            print(f"Request failed with status code {response.status_code}")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+
+
 async def forward_request(request: Request, target_url: str):
     if not await LIMITER.can_pass_request(request, rate_per_minute=10):
         return JSONResponse(
@@ -91,11 +113,10 @@ async def forward_request(request: Request, target_url: str):
             content=CutApiErrorResponse(message="Request limit reached.").dict(),
         )
 
-    # TODO register event here
-
     async with httpx.AsyncClient() as client:
         # TODO if token - here all requests must have a token though - but handle errors
         token = request.headers.get("authorization").replace("Bearer ", "")
+        register_request_event(token, target_url)
         try:
             user = authorise_request(token)
             print(user)
