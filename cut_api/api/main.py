@@ -1,3 +1,4 @@
+import logging
 from typing import Optional
 
 import httpx
@@ -8,9 +9,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from cut_api.auth.tokens import AuthError, authorise_request
+from cut_api.auth.tokens import AuthError
 from cut_api.config import settings
-from cut_api.dependencies import LIMITER
+from cut_api.dependencies import LIMITER, authorise_request
+
+logger = logging.getLogger(__name__)
 
 
 class CutApiErrorResponse(BaseModel):
@@ -62,25 +65,6 @@ ROUTING_TABLE = {
 }
 
 
-# Endpoints:
-
-# POST /noise/v2/tasks
-# GET  /noise/v2/tasks/{task_id}
-# GET  /noise/v2/tasks/{task_id}/status
-
-# POST /water/v2/tasks
-# GET  /water/v2/tasks/{task_id}
-# GET  /water/v2/tasks/{task_id}/status
-
-# POST /abm/v2/tasks
-# GET  /abm/v2/tasks/{task_id}
-# GET  /abm/v2/tasks/{task_id}/status
-
-# POST /wind/v2/tasks
-# GET  /wind/v2/tasks/{task_id}
-# GET  /wind/v2/tasks/{task_id}/status
-# POST /wind/v2/grouptasks/{group_task_id}
-
 # TODO jobs/{job_id}/results
 # TODO validate endpoint
 # TODO pygeo api
@@ -91,23 +75,22 @@ async def register_request_event(token: str, endpoint: str) -> None:
     try:
         headers = {
             "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",  # Set the content type as needed
+            "Content-Type": "application/json",
         }
+        logger.info("Sending request to register request_event...")
         response = requests.post(
             REQUEST_EVENTS_URL, json={"endpoint_called": endpoint}, headers=headers
         )
         if response.status_code == 200:
-            print("Request was successful!")
-            print("Response:")
-            print(response.text)
+            logger.info("Request was successful!")
         else:
-            print(f"Request failed with status code {response.status_code}")
+            logger.warning(f"Request failed with status code {response.status_code}")
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
+        logger.warning(f"An error occurred: {str(e)}")
 
 
 async def forward_request(request: Request, target_url: str):
-    if not await LIMITER.can_pass_request(request, rate_per_minute=10):
+    if not await LIMITER.can_pass_request(request):
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             content=CutApiErrorResponse(message="Request limit reached.").dict(),
@@ -118,23 +101,22 @@ async def forward_request(request: Request, target_url: str):
         token = request.headers.get("authorization").replace("Bearer ", "")
         register_request_event(token, target_url)
         try:
-            user = authorise_request(token)
-            print(user)
-
-            response = await client.request(
-                request.method, target_url, data=await request.body()
-            )
-
-            return Response(
-                content=response.content,
-                status_code=response.status_code,
-                headers=response.headers,
-            )
+            _ = authorise_request(token)
         except AuthError as exc:
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=CutApiErrorResponse(message=exc.message).dict(),
             )
+
+        response = await client.request(
+            request.method, target_url, data=await request.body()
+        )
+
+        return Response(
+            content=response.content,
+            status_code=response.status_code,
+            headers=response.headers,
+        )
 
 
 @app.middleware("http")

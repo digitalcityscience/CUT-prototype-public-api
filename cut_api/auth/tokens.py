@@ -4,7 +4,6 @@ from datetime import datetime
 import jwt
 
 from cut_api.common.models import BaseModelStrict
-from cut_api.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -83,29 +82,3 @@ class TokenManager:
             logger.error("Token verification failed: Not an access token.")
             raise AuthErrorNotAnAccessToken
         return verified_token.user
-
-
-def authorise_request(
-    token: str,
-) -> ApiUser:
-    # TODO remove this condition, use only during development
-    # from datetime import datetime
-    # if settings.environment == "LOCALDEV":
-    #     return ApiUserInToken(
-    #         id="local_dev_user",
-    #         email="local_dev@user.de",
-    #         restricted=False,
-    #         created_at=datetime.now(),
-    #     )
-
-    if not token:
-        raise AuthErrorMissingToken
-    if user_in_token := TokenManager(
-        settings.auth.token_signing_key
-    ).verify_access_token(token):
-        # register in DB that this user called the endpoint for access monitoring
-        # USERS_DB.create_request_event(
-        #     user_id=user_in_token.id, endpoint=request.url.path.replace("/", "")
-        # )
-
-        return user_in_token
