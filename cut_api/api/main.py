@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from cut_api.api.converter import convert_geojson_to_png
 from cut_api.api.responses import CutApiErrorResponse
 from cut_api.auth.tokens import AuthError
 from cut_api.config import settings
@@ -59,7 +60,6 @@ ROUTING_TABLE = {
 # TODO jobs/{job_id}/results
 # TODO validate endpoint
 # TODO pygeo api
-# TODO conversion between PNG and GEOJSON
 # TODO: implement OCG standards: https://app.swaggerhub.com/apis/OGC/ogcapi-processes-1-example-1/1.0.0#/
 
 
@@ -81,6 +81,12 @@ async def register_request_event(token: str, endpoint: str) -> None:
         logger.warning(f"An error occurred: {str(e)}")
 
 
+async def convert_output(geojson, to_format):
+    if to_format == "png":
+        return convert_geojson_to_png(geojson)
+    raise Exception("Format not allowed.")
+
+
 async def forward_request(request: Request, target_url: str):
     if not await LIMITER.can_pass_request(request):
         return JSONResponse(
@@ -91,7 +97,7 @@ async def forward_request(request: Request, target_url: str):
     async with httpx.AsyncClient() as client:
         # TODO if token - here all requests must have a token though - but handle errors
         token = request.headers.get("authorization").replace("Bearer ", "")
-        register_request_event(token, target_url)
+        await register_request_event(token, target_url)
         try:
             _ = authorise_request(token)
         except AuthError as exc:
@@ -120,6 +126,23 @@ async def forward_request(request: Request, target_url: str):
                 )
 
         response = await client.request(request.method, target_url, json=request_json)
+
+        if (
+            request.method == "GET"
+            and "status" not in request.url.path
+            and response.status_code == 200
+        ):
+            if result := response.json().get("result"):
+                desired_output_format = result["result_format"]
+                if desired_output_format != "geojson":
+                    converted_result = await convert_output(
+                        result["geojson"], desired_output_format
+                    )
+
+                    return Response(
+                        content=str(converted_result).encode(),
+                        status_code=response.status_code,
+                    )
 
         return Response(
             content=response.content,
