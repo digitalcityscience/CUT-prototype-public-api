@@ -1,3 +1,4 @@
+import json
 import logging
 
 import httpx
@@ -41,6 +42,7 @@ async def health_check():
     return "ok"
 
 
+VALID_RESULT_FORMATS = ["png", "geojson"]
 REQUEST_EVENTS_URL = "http://localhost:8001/request_events"
 
 # If target server is not present in this routing table
@@ -98,9 +100,26 @@ async def forward_request(request: Request, target_url: str):
                 content=CutApiErrorResponse(message=exc.message).dict(),
             )
 
-        response = await client.request(
-            request.method, target_url, data=await request.body()
-        )
+        request_body = await request.body()
+        request_json = json.loads(request_body.decode())
+
+        if request.method == "POST":
+            if "result_format" not in request_json:
+                return JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content=CutApiErrorResponse(
+                        message="Request must include result_format key."
+                    ).dict(),
+                )
+            if request_json["result_format"] not in VALID_RESULT_FORMATS:
+                return JSONResponse(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    content=CutApiErrorResponse(
+                        message=f"Result format key. Valid options are {VALID_RESULT_FORMATS} "
+                    ).dict(),
+                )
+
+        response = await client.request(request.method, target_url, json=request_json)
 
         return Response(
             content=response.content,
