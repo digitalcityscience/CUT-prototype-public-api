@@ -106,14 +106,14 @@ async def forward_request(request: Request, target_url: str):
         if request.method == "POST":
             if "result_format" not in request_json:
                 return JSONResponse(
-                    status_code=status.HTTP_400_BAD_REQUEST,
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     content=CutApiErrorResponse(
                         message="Request must include result_format key."
                     ).dict(),
                 )
             if request_json["result_format"] not in VALID_RESULT_FORMATS:
                 return JSONResponse(
-                    status_code=status.HTTP_400_BAD_REQUEST,
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                     content=CutApiErrorResponse(
                         message=f"Result format key. Valid options are {VALID_RESULT_FORMATS} "
                     ).dict(),
