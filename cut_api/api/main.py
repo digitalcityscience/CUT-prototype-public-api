@@ -58,6 +58,7 @@ ROUTING_TABLE = {
 # TODO validate endpoint
 # TODO pygeo api
 # TODO conversion between PNG and GEOJSON
+# TODO: implement OCG standards: https://app.swaggerhub.com/apis/OGC/ogcapi-processes-1-example-1/1.0.0#/
 
 
 async def register_request_event(token: str, endpoint: str) -> None:

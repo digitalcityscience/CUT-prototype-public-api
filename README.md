@@ -1,8 +1,11 @@
 # CUT Prototype Public API
 
-A FastAPI-based API that acts as a `reverse proxy`, forwarding requests to different target servers (noise. water, wind, pedestrians) based on the requested endpoint's path. It also includes features like `rate limiting` and `authorization`: 
-
-The API includes other middleware features like `CORS` support and `request events logging`. 
+A FastAPI-based API that acts as a `reverse proxy`, forwarding requests to different target servers (noise. water, wind, pedestrians) based on the requested endpoint's path. It also centralises the following features:
+1) rate limiting; 
+2) authorization; 
+3) request event metadata logging by user;
+4) `CORS` support;
+5) response format conversion (PNG, geojson).
 
 
 ## Routing
