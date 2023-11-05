@@ -1,3 +1,5 @@
+from typing import Literal, Optional
+
 from pydantic import BaseSettings, Field
 
 
@@ -41,6 +43,7 @@ class Settings(BaseSettings):
     description: str = Field(..., env="APP_DESCRIPTION")
     version: str = Field(..., env="APP_VERSION")
     debug: bool = Field(..., env="DEBUG")
+    log_level: Optional[Literal["DEBUG", "INFO"]] = Field("INFO", env="LOG_LEVEL")
     environment: str = Field(..., env="ENV")
     port: int = Field(..., env="APP_PORT")
     limiter: RateLimiter = Field(default_factory=RateLimiter)

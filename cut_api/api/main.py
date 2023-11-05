@@ -13,6 +13,9 @@ from cut_api.api.responses import CutApiErrorResponse
 from cut_api.auth.tokens import AuthError
 from cut_api.config import settings
 from cut_api.dependencies import LIMITER, authorise_request
+from cut_api.logs import setup_logging
+
+setup_logging()
 
 logger = logging.getLogger(__name__)
 
