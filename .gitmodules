@@ -1,0 +1,6 @@
+[submodule "external_apis/COUP-noise-api-v2"]
+	path = external_apis/COUP-noise-api-v2
+	url = https://github.com/digitalcityscience/COUP-noise-api-v2
+[submodule "external_apis/COUP-stormwater-api-v2-"]
+	path = external_apis/COUP-stormwater-api-v2-
+	url = https://github.com/digitalcityscience/COUP-stormwater-api-v2-
