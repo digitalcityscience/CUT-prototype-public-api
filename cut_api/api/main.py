@@ -108,17 +108,15 @@ async def forward_request(request: Request, target_url: str):
         )
 
     async with httpx.AsyncClient() as client:
-        # TODO if token - here all requests must have a token though - but handle errors
-        # All requests should have a token
-        token = request.headers.get("authorization").replace("Bearer ", "")
-        await register_request_event(token, target_url)
         try:
-            _ = authorise_request(token)
+            token = authorise_request(request)
         except AuthError as exc:
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content=CutApiErrorResponse(message=exc.message).dict(),
             )
+
+        await register_request_event(token, target_url)
 
         request_body = await request.body()
         request_json = json.loads(request_body.decode())
