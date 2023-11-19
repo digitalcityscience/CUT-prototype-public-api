@@ -23,7 +23,4 @@ def authorise_request(
 
     if not token:
         raise AuthErrorMissingToken
-    if user_in_token := TokenManager(
-        settings.auth.token_signing_key
-    ).verify_access_token(token):
-        return user_in_token
+    return TokenManager(settings.auth.token_signing_key).verify_access_token(token)

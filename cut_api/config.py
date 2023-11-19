@@ -38,6 +38,13 @@ class Auth(BaseSettings):
     token_signing_key: str = Field(..., env="TOKEN_SIGNING_KEY", min_length=1)
 
 
+class ExternalAPIs(BaseSettings):
+    wind: str = Field(..., env="WIND_API_ADDRESS", min_length=1)
+    pedestrians: str = Field(..., env="PEDESTRIAN_API_ADDRESS", min_length=1)
+    noise: str = Field(..., env="NOISE_API_ADDRESS", min_length=1)
+    water: str = Field(..., env="WATER_API_ADDRESS", min_length=1)
+
+
 class Settings(BaseSettings):
     title: str = Field(..., env="APP_TITLE")
     description: str = Field(..., env="APP_DESCRIPTION")
@@ -49,6 +56,8 @@ class Settings(BaseSettings):
     limiter: RateLimiter = Field(default_factory=RateLimiter)
     cache: CacheRedis = Field(default_factory=CacheRedis)
     auth: Auth = Field(default_factory=Auth)
+    external_apis: ExternalAPIs = Field(default_factory=ExternalAPIs)
+    request_logging_endpoint: str = Field(..., env="REQUEST_LOGGING_ENDPOINT")
 
 
 settings = Settings()

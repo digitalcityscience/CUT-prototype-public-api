@@ -47,17 +47,18 @@ async def health_check():
 
 
 VALID_RESULT_FORMATS = ["png", "geojson"]
-REQUEST_EVENTS_URL = "http://localhost:8001/request_events"
+
 
 # If target server is not present in this routing table
 # the API will return a 404 - Not Found
 ROUTING_TABLE = {
-    "resources": "http://localhost:8001",
-    "noise": "http://localhost:8002",
-    "water": "http://localhost:8003",
-    # "wind": "http://localhost:8001",
-    # "pedestrians": "http://localhost:8001",
+    "noise": settings.external_apis.noise,
+    "stormwater": settings.external_apis.water,
+    "wind": settings.external_apis.wind,
+    "pedestrians": settings.external_apis.pedestrians,
 }
+
+# REQUEST_EVENTS_URL = f"{settings.external_apis.resources}/request_events"
 
 
 # TODO jobs/{job_id}/results
@@ -71,7 +72,11 @@ ROUTING_TABLE = {
 # print("Result geojson save in ", noise_result_geojson)
 
 
-async def register_request_event(token: str, endpoint: str) -> None:
+async def register_request_event(
+    token: str,
+    endpoint: str,
+    request_logging_url: str = settings.request_logging_endpoint,
+) -> None:
     try:
         headers = {
             "Authorization": f"Bearer {token}",
@@ -79,7 +84,7 @@ async def register_request_event(token: str, endpoint: str) -> None:
         }
         logger.info("Sending request to register request_event...")
         response = requests.post(
-            REQUEST_EVENTS_URL, json={"endpoint_called": endpoint}, headers=headers
+            f"{request_logging_url}?endpoint_called={endpoint}", headers=headers
         )
         if response.status_code == 200:
             logger.info("Request was successful!")
@@ -104,6 +109,7 @@ async def forward_request(request: Request, target_url: str):
 
     async with httpx.AsyncClient() as client:
         # TODO if token - here all requests must have a token though - but handle errors
+        # All requests should have a token
         token = request.headers.get("authorization").replace("Bearer ", "")
         await register_request_event(token, target_url)
         try:
@@ -117,6 +123,7 @@ async def forward_request(request: Request, target_url: str):
         request_body = await request.body()
         request_json = json.loads(request_body.decode())
 
+        # TODO move this to an exception handler
         if request.method == "POST":
             if "result_format" not in request_json:
                 return JSONResponse(
@@ -132,28 +139,23 @@ async def forward_request(request: Request, target_url: str):
                         message=f"Result format key. Valid options are {VALID_RESULT_FORMATS} "
                     ).dict(),
                 )
-
+        # the resources API needs the bearer token to be forwarded
+        # headers = {'authorization': f'Bearer {token}', 'content-type': 'application/json'}
         response = await client.request(request.method, target_url, json=request_json)
 
-        if (
-            request.method == "GET"
-            and "status" not in request.url.path
-            and response.status_code == 200
-        ):
-            if result := response.json().get("result"):
-                desired_output_format = result["result_format"]
-                if desired_output_format != "geojson":
-                    converted_result = await convert_output(
-                        result["geojson"], desired_output_format
-                    )
+        response_content = response.content
 
-                    return Response(
-                        content=str(converted_result).encode(),
-                        status_code=response.status_code,
-                    )
+        # TODO standardise response in calculation APIs
+        if result := response.json().get("result") or response.json().get("geojson"):
+            desired_output_format = request_json["result_format"]
+            if desired_output_format != "geojson":
+                converted_result = await convert_output(
+                    result["geojson"], desired_output_format
+                )
+                response_content = str(converted_result).encode()
 
         return Response(
-            content=response.content,
+            content=response_content,
             status_code=response.status_code,
             headers=response.headers,
         )
