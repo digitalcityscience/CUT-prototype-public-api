@@ -15,4 +15,6 @@ def load_json_from_file(file_path):
 def test_png_conversion():
     test_case_data = load_json_from_file(PNG_TEST_CASE)
     expected_result = test_case_data["output"]
-    assert geojson_to_rasterized_png(test_case_data["input"]) == expected_result
+    converted = geojson_to_rasterized_png(test_case_data["input"])
+    converted_encoded = json.dumps(converted).encode()
+    assert json.loads(converted_encoded) == expected_result
