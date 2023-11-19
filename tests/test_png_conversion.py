@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from cut_api.api.converter import geojson_to_rasterized_png
+from cut_api.utils import geojson_to_rasterized_png
 
 PNG_TEST_CASE = Path(__file__).parent / "test_cases" / "geojson_to_png_test_case.json"
 

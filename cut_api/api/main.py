@@ -8,12 +8,12 @@ from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from cut_api.api.converter import geojson_to_rasterized_png
 from cut_api.api.responses import CutApiErrorResponse
 from cut_api.auth.tokens import AuthError
 from cut_api.config import settings
 from cut_api.dependencies import LIMITER, authorise_request
 from cut_api.logs import setup_logging
+from cut_api.utils import geojson_to_rasterized_png
 
 setup_logging()
 
