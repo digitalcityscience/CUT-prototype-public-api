@@ -8,7 +8,7 @@ from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from cut_api.api.converter import convert_geojson_to_png
+from cut_api.api.converter import geojson_to_rasterized_png
 from cut_api.api.responses import CutApiErrorResponse
 from cut_api.auth.tokens import AuthError
 from cut_api.config import settings
@@ -96,7 +96,7 @@ async def register_request_event(
 
 async def convert_output(geojson, to_format):
     if to_format == "png":
-        return convert_geojson_to_png(geojson)
+        return geojson_to_rasterized_png(geojson)
     raise Exception("Format not allowed.")
 
 
@@ -145,14 +145,18 @@ async def forward_request(request: Request, target_url: str):
 
         response_content = response.content
 
-        # TODO standardise response in calculation APIs
+        # TODO standardise response in calculation APIs for when it returns from cache
+        # with a post request and from when it returns from get request with task_id
+        # as currently in one case (task_id) the root key is "result" and the other case
+        # (from cache) it is "result_format" and "geojson"
         if result := response.json().get("result") or response.json().get("geojson"):
             desired_output_format = request_json["result_format"]
             if desired_output_format != "geojson":
                 converted_result = await convert_output(
                     result["geojson"], desired_output_format
                 )
-                response_content = str(converted_result).encode()
+                response_content = json.dumps(converted_result).encode()
+                response.headers["content-length"] = str(len(response_content))
 
         return Response(
             content=response_content,
