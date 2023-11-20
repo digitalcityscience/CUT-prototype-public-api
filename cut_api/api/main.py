@@ -62,12 +62,9 @@ ROUTING_TABLE = {
 
 
 # TODO jobs/{job_id}/results
-# TODO validate endpoint
 # TODO pygeo api
 # TODO: implement OCG standards: https://app.swaggerhub.com/apis/OGC/ogcapi-processes-1-example-1/1.0.0#/
 # TODO remove user from here and investigate how to implement clipping
-# cityPyo_user = ""
-
 # noise_result_geojson = clip_gdf_to_project_area(noise_result_geojson, cityPyo_user)
 # print("Result geojson save in ", noise_result_geojson)
 

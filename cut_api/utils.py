@@ -90,3 +90,16 @@ def geojson_to_rasterized_png(geojson):
         "bbox_coordinates": bounds_coordinates,
         "image_base64_string": base64_string,
     }
+
+
+def to_camel_case(snake_str):
+    components = snake_str.split("_")
+    return components[0] + "".join(x.title() for x in components[1:])
+
+
+def convert_keys_to_camel_case(input_dict):
+    camel_case_dict = {}
+    for key, value in input_dict.items():
+        camel_case_key = to_camel_case(key)
+        camel_case_dict[camel_case_key] = value
+    return camel_case_dict
