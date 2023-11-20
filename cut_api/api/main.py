@@ -94,6 +94,29 @@ async def register_request_event(
         logger.warning(f"An error occurred: {str(e)}")
 
 
+async def prepare_response(request_json, response):
+    response_content = response.content
+
+    # TODO standardise response in calculation APIs for when it returns from cache
+    # with a post request and from when it returns from get request with task_id
+    # as currently in one case (task_id) the root key is "result" and the other case
+    # (from cache) it is "result_format" and "geojson"
+    if result := response.json().get("result") or response.json().get("geojson"):
+        desired_output_format = request_json["result_format"]
+        if desired_output_format != "geojson":
+            converted_from_geojson = await convert_output(
+                result["geojson"], desired_output_format
+            )
+            response_content = json.dumps({"result": converted_from_geojson}).encode()
+            response.headers["content-length"] = str(len(response_content))
+
+    return Response(
+        content=response_content,
+        status_code=response.status_code,
+        headers=response.headers,
+    )
+
+
 async def convert_output(geojson, to_format):
     if to_format == "png":
         return geojson_to_rasterized_png(geojson)
@@ -137,30 +160,10 @@ async def forward_request(request: Request, target_url: str):
                         message=f"Result format key. Valid options are {VALID_RESULT_FORMATS} "
                     ).dict(),
                 )
-        # the resources API needs the bearer token to be forwarded
-        # headers = {'authorization': f'Bearer {token}', 'content-type': 'application/json'}
+
         response = await client.request(request.method, target_url, json=request_json)
 
-        response_content = response.content
-
-        # TODO standardise response in calculation APIs for when it returns from cache
-        # with a post request and from when it returns from get request with task_id
-        # as currently in one case (task_id) the root key is "result" and the other case
-        # (from cache) it is "result_format" and "geojson"
-        if result := response.json().get("result") or response.json().get("geojson"):
-            desired_output_format = request_json["result_format"]
-            if desired_output_format != "geojson":
-                converted_result = await convert_output(
-                    result["geojson"], desired_output_format
-                )
-                response_content = json.dumps(converted_result).encode()
-                response.headers["content-length"] = str(len(response_content))
-
-        return Response(
-            content=response_content,
-            status_code=response.status_code,
-            headers=response.headers,
-        )
+        return await prepare_response(request_json, response)
 
 
 @app.middleware("http")
