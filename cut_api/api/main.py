@@ -158,19 +158,19 @@ async def forward_request(request: Request, target_url: str):
 @app.middleware("http")
 async def custom_reverse_proxy(request: Request, call_next):
     request_path = request.url.path
-    print(f"Request path is {request_path}")
+    logger.info(f"Request path is {request_path}")
 
     # TODO deactivate docs redocs etc
     if request_path in ["/openapi.json", "/docs", "/"]:
         return await call_next(request)
 
     target_server_name = request_path.split("/")[1]
-    print(f"target server name is {target_server_name}")
+    logger.info(f"target server name is {target_server_name}")
 
     if target_server_url := ROUTING_TABLE.get(target_server_name):
-        print(f"Target server URL is {target_server_url}")
+        logger.info(f"Target server URL is {target_server_url}")
         target_url = f"{target_server_url}{request_path}"
-        print(f"Target endpoint is {target_url}")
+        logger.info(f"Target endpoint is {target_url}")
         return await forward_request(request, target_url)
 
     return await call_next(request)
