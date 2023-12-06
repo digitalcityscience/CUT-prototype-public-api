@@ -58,16 +58,6 @@ ROUTING_TABLE = {
     "pedestrians": settings.external_apis.pedestrians,
 }
 
-# REQUEST_EVENTS_URL = f"{settings.external_apis.resources}/request_events"
-
-
-# TODO jobs/{job_id}/results
-# TODO pygeo api
-# TODO: implement OCG standards: https://app.swaggerhub.com/apis/OGC/ogcapi-processes-1-example-1/1.0.0#/
-# TODO remove user from here and investigate how to implement clipping
-# noise_result_geojson = clip_gdf_to_project_area(noise_result_geojson, cityPyo_user)
-# print("Result geojson save in ", noise_result_geojson)
-
 
 async def register_request_event(
     token: str,
@@ -91,20 +81,20 @@ async def register_request_event(
         logger.warning(f"An error occurred: {str(e)}")
 
 
-async def prepare_response(request_json, response):
+async def prepare_response(desired_output_format, response):
     response_content = response.content
 
     # TODO standardise response in calculation APIs for when it returns from cache
     # with a post request and from when it returns from get request with task_id
     # as currently in one case (task_id) the root key is "result" and the other case
     # (from cache) it is "result_format" and "geojson"
-    if result := response.json().get("result") or response.json().get("geojson"):
-        desired_output_format = request_json["result_format"]
+    if result := response.json().get("result"):
         if desired_output_format != "geojson":
             converted_from_geojson = await convert_output(
-                result["geojson"], desired_output_format
+                result.pop("geojson"), desired_output_format
             )
-            response_content = json.dumps({"result": converted_from_geojson}).encode()
+            result[desired_output_format.lower()] = converted_from_geojson
+            response_content = json.dumps({"result": result}).encode()
             response.headers["content-length"] = str(len(response_content))
 
     return Response(
@@ -138,29 +128,31 @@ async def forward_request(request: Request, target_url: str):
 
         await register_request_event(token, target_url)
 
-        request_body = await request.body()
-        request_json = json.loads(request_body.decode())
-
-        # TODO move this to an exception handler
         if request.method == "POST":
-            if "result_format" not in request_json:
-                return JSONResponse(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    content=CutApiErrorResponse(
-                        message="Request must include result_format key."
-                    ).dict(),
-                )
-            if request_json["result_format"] not in VALID_RESULT_FORMATS:
-                return JSONResponse(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    content=CutApiErrorResponse(
-                        message=f"Result format key. Valid options are {VALID_RESULT_FORMATS} "
-                    ).dict(),
-                )
+            request_body = await request.body()
+            request_json = json.loads(request_body.decode())
+            response = await client.request(
+                request.method, target_url, json=request_json
+            )
+        elif request.method == "GET":
+            response = await client.request(request.method, target_url)
 
-        response = await client.request(request.method, target_url, json=request_json)
+            if "results" in target_url:
+                if desired_result_format := request.query_params.get("result_format"):
+                    if desired_result_format.lower() not in VALID_RESULT_FORMATS:
+                        return JSONResponse(
+                            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            content=CutApiErrorResponse(
+                                message=f"Result format key. Valid options are {VALID_RESULT_FORMATS} "
+                            ).dict(),
+                        )
+                    return await prepare_response(desired_result_format, response)
 
-        return await prepare_response(request_json, response)
+        return Response(
+            content=response.content,
+            status_code=response.status_code,
+            headers=response.headers,
+        )
 
 
 @app.middleware("http")

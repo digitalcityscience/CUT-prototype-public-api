@@ -33,47 +33,47 @@ services:
     volumes:
       - "./redis/data:/data"
   
-  noise-api:
-    <<: *common_settings
-    build:
-      context: ./external_apis/COUP-noise-api-v2
-    env_file: .env.noise
-    ports:
-      - '${NOISE_API_PORT}:${NOISE_API_PORT}'
-    command: uvicorn noise_api.api.main:app --host 0.0.0.0 --port ${NOISE_API_PORT} --reload
-    volumes:
-      - ./external_apis/COUP-noise-api-v2:/app
+  # noise-api:
+  #   <<: *common_settings
+  #   build:
+  #     context: ./external_apis/COUP-noise-api-v2
+  #   env_file: .env.noise
+  #   ports:
+  #     - '${NOISE_API_PORT}:${NOISE_API_PORT}'
+  #   command: uvicorn noise_api.api.main:app --host 0.0.0.0 --port ${NOISE_API_PORT} --reload
+  #   volumes:
+  #     - ./external_apis/COUP-noise-api-v2:/app
   
-  noise-api-celery-worker:
-    <<: *common_settings
-    container_name: noise-api-celery-worker
-    build:
-      context: ./external_apis/COUP-noise-api-v2
-    env_file: .env.noise
-    command: celery -A noise_api.tasks worker --loglevel=info
-    volumes:
-      - ./external_apis/COUP-noise-api-v2:/app
+  # noise-api-celery-worker:
+  #   <<: *common_settings
+  #   container_name: noise-api-celery-worker
+  #   build:
+  #     context: ./external_apis/COUP-noise-api-v2
+  #   env_file: .env.noise
+  #   command: celery -A noise_api.tasks worker --loglevel=info
+  #   volumes:
+  #     - ./external_apis/COUP-noise-api-v2:/app
   
-  stormwater-api:
-    <<: *common_settings
-    build:
-      context: ./external_apis/COUP-stormwater-api-v2-
-    env_file: .env.water
-    ports:
-      - '${WATER_API_PORT}:${WATER_API_PORT}'
-    command: uvicorn stormwater_api.api.main:app --host 0.0.0.0 --port ${WATER_API_PORT} --reload
-    volumes:
-      - ./external_apis/COUP-stormwater-api-v2-:/app
+  # stormwater-api:
+  #   <<: *common_settings
+  #   build:
+  #     context: ./external_apis/COUP-stormwater-api-v2-
+  #   env_file: .env.water
+  #   ports:
+  #     - '${WATER_API_PORT}:${WATER_API_PORT}'
+  #   command: uvicorn stormwater_api.api.main:app --host 0.0.0.0 --port ${WATER_API_PORT} --reload
+  #   volumes:
+  #     - ./external_apis/COUP-stormwater-api-v2-:/app
   
-  stormwater-api-celery-worker:
-    <<: *common_settings
-    container_name: stormwater-celery-worker
-    build:
-      context: ./external_apis/COUP-stormwater-api-v2-
-    env_file: .env.water
-    command: celery -A stormwater_api.tasks worker --loglevel=info
-    volumes:
-      - ./external_apis/COUP-stormwater-api-v2-:/app
+  # stormwater-api-celery-worker:
+  #   <<: *common_settings
+  #   container_name: stormwater-celery-worker
+  #   build:
+  #     context: ./external_apis/COUP-stormwater-api-v2-
+  #   env_file: .env.water
+  #   command: celery -A stormwater_api.tasks worker --loglevel=info
+  #   volumes:
+  #     - ./external_apis/COUP-stormwater-api-v2-:/app
 
 
 networks:
