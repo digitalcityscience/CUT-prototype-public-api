@@ -28,8 +28,9 @@ app = FastAPI(
 
 # TODO replace origins
 origins = [
-    "http://localhost",
-    "http://localhost:8080",
+    # "http://localhost",
+    # "http://localhost:8080",
+    "*"
 ]
 
 app.add_middleware(
@@ -157,7 +158,9 @@ async def forward_request(request: Request, target_url: str):
 
 @app.middleware("http")
 async def custom_reverse_proxy(request: Request, call_next):
-    request_path = request.url.path
+    # TODO this is a temp fix due to the nginx configs, in an ideal scenario
+    # cut-public-api should be served at root, but is currently served at /cut-public-api
+    request_path = request.url.path.replace("/cut-public-api", "")
     logger.info(f"Request path is {request_path}")
 
     # TODO deactivate docs redocs etc
