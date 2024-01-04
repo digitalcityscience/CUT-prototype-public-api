@@ -39,8 +39,9 @@ class Auth(BaseSettings):
 
 
 class ExternalAPIs(BaseSettings):
-    wind: str = Field(..., env="WIND_API_ADDRESS", min_length=1)
-    pedestrians: str = Field(..., env="PEDESTRIAN_API_ADDRESS", min_length=1)
+    # TODO standardise naming of these apis
+    wind: str = Field(..., env="INFRARED_WRAPPER_API_ADDRESS", min_length=1)
+    # pedestrians: str = Field(..., env="PEDESTRIAN_API_ADDRESS", min_length=1)
     noise: str = Field(..., env="NOISE_API_ADDRESS", min_length=1)
     water: str = Field(..., env="WATER_API_ADDRESS", min_length=1)
 
