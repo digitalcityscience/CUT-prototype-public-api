@@ -7,25 +7,7 @@ A FastAPI-based API that acts as a `reverse proxy`, forwarding requests to diffe
 4) `CORS` support;
 5) response format conversion (PNG, geojson).
 
-
-## Routing
-
-
-| HTTP Method | Endpoint                  |
-|-------------|---------------------------|
-| POST        | /noise/v2/tasks           |
-| GET         | /noise/v2/tasks/{task_id} |
-| GET         | /noise/v2/tasks/{task_id}/status |
-| POST        | /water/v2/tasks           |
-| GET         | /water/v2/tasks/{task_id} |
-| GET         | /water/v2/tasks/{task_id}/status |
-| POST        | /abm/v2/tasks             |
-| GET         | /abm/v2/tasks/{task_id}   |
-| GET         | /abm/v2/tasks/{task_id}/status |
-| POST        | /wind/v2/tasks            |
-| GET         | /wind/v2/tasks/{task_id}  |
-| GET         | /wind/v2/tasks/{task_id}/status |
-| POST        | /wind/v2/grouptasks/{group_task_id} |
+!["CUT Prototype Architecture"](.documentation/cut-architecture.jpg "CUT Prototype Architecture")
 
 
 ## Local Dev
