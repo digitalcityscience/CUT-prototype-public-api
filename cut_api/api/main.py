@@ -56,7 +56,7 @@ ROUTING_TABLE = {
     "noise": settings.external_apis.noise,
     "stormwater": settings.external_apis.water,
     "wind": settings.external_apis.wind,
-    "pedestrians": settings.external_apis.pedestrians,
+    # "pedestrians": settings.external_apis.pedestrians,
 }
 
 
