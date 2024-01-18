@@ -119,15 +119,19 @@ async def forward_request(request: Request, target_url: str):
         )
 
     async with httpx.AsyncClient() as client:
-        try:
-            token = authorise_request(request)
-        except AuthError as exc:
-            return JSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content=CutApiErrorResponse(message=exc.message).dict(),
-            )
+        # if request is to swagger docs, etc, auth is not needed
+        if not any(
+            endpoint in target_url for endpoint in ["docs", "openapi.json", "redoc"]
+        ):
+            try:
+                token = authorise_request(request)
+            except AuthError as exc:
+                return JSONResponse(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    content=CutApiErrorResponse(message=exc.message).dict(),
+                )
 
-        await register_request_event(token, target_url)
+            await register_request_event(token, target_url)
 
         if request.method == "POST":
             request_body = await request.body()
@@ -162,9 +166,6 @@ async def custom_reverse_proxy(request: Request, call_next):
     # cut-public-api should be served at root, but is currently served at /cut-public-api
     request_path = request.url.path.replace("/cut-public-api", "")
     logger.info(f"Request path is {request_path}")
-
-    if any(endpoint in request_path for endpoint in ["docs", "openapi.json", "redoc"]):
-        return await call_next(request)
 
     target_server_name = request_path.split("/")[1]
     logger.info(f"target server name is {target_server_name}")
