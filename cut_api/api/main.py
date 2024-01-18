@@ -119,9 +119,9 @@ async def forward_request(request: Request, target_url: str):
         )
 
     async with httpx.AsyncClient() as client:
-        # if request is to swagger docs, etc, auth is not needed
-        if not any(
-            endpoint in target_url for endpoint in ["docs", "openapi.json", "redoc"]
+        # if request is to docs endpoints, auth is skipped
+        if all(
+            endpoint not in target_url for endpoint in ["docs", "openapi.json", "redoc"]
         ):
             try:
                 token = authorise_request(request)
@@ -144,15 +144,16 @@ async def forward_request(request: Request, target_url: str):
 
             if "results" in target_url:
                 if desired_result_format := request.query_params.get("result_format"):
-                    if desired_result_format.lower() not in VALID_RESULT_FORMATS:
-                        return JSONResponse(
+                    return (
+                        JSONResponse(
                             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
                             content=CutApiErrorResponse(
                                 message=f"Result format key. Valid options are {VALID_RESULT_FORMATS} "
                             ).dict(),
                         )
-                    return await prepare_response(desired_result_format, response)
-
+                        if desired_result_format.lower() not in VALID_RESULT_FORMATS
+                        else await prepare_response(desired_result_format, response)
+                    )
         return Response(
             content=response.content,
             status_code=response.status_code,
