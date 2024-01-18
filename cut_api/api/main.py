@@ -27,11 +27,7 @@ app = FastAPI(
 )
 
 # TODO replace origins
-origins = [
-    # "http://localhost",
-    # "http://localhost:8080",
-    "*"
-]
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
@@ -119,6 +115,17 @@ async def forward_request(request: Request, target_url: str):
         )
 
     async with httpx.AsyncClient() as client:
+        if request.method == "OPTIONS":
+            logger.info("-" * 100)
+            logger.info("Request is of type OPTIONS.")
+            logger.info("-" * 100)
+            response = await client.request(request.method, target_url)
+            return Response(
+                content=response.content,
+                status_code=response.status_code,
+                headers=response.headers,
+            )
+
         # if request is to docs endpoints, auth is skipped
         if all(
             endpoint not in target_url for endpoint in ["docs", "openapi.json", "redoc"]
