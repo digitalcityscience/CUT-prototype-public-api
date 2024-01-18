@@ -117,12 +117,21 @@ async def forward_request(request: Request, target_url: str):
     async with httpx.AsyncClient() as client:
         if request.method == "OPTIONS":
             logger.info("Request is of type OPTIONS.")
-            return await client.options(target_url)
-            # return Response(
-            #     content=response.content,
-            #     status_code=response.status_code,
-            #     headers=response.headers,
-            # )
+            response = await client.options(target_url, headers=request.headers)
+            # Set the appropriate headers for the OPTIONS request
+            response.headers[
+                "Access-Control-Allow-Origin"
+            ] = "*"  # Replace with your desired CORS settings
+            response.headers[
+                "Access-Control-Allow-Methods"
+            ] = "OPTIONS, GET, POST, PUT, DELETE"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type"
+
+            return Response(
+                content=response.content,
+                status_code=response.status_code,
+                headers=response.headers,
+            )
 
         # if request is to docs endpoints, auth is skipped
         if all(
