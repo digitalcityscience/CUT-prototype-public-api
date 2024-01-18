@@ -163,8 +163,7 @@ async def custom_reverse_proxy(request: Request, call_next):
     request_path = request.url.path.replace("/cut-public-api", "")
     logger.info(f"Request path is {request_path}")
 
-    # TODO deactivate docs redocs etc
-    if request_path in ["/openapi.json", "/docs", "/"]:
+    if any(endpoint in request_path for endpoint in ["docs", "openapi.json", "redoc"]):
         return await call_next(request)
 
     target_server_name = request_path.split("/")[1]
