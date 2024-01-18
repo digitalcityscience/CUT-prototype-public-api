@@ -116,15 +116,13 @@ async def forward_request(request: Request, target_url: str):
 
     async with httpx.AsyncClient() as client:
         if request.method == "OPTIONS":
-            logger.info("-" * 100)
             logger.info("Request is of type OPTIONS.")
-            logger.info("-" * 100)
-            response = await client.request(request.method, target_url)
-            return Response(
-                content=response.content,
-                status_code=response.status_code,
-                headers=response.headers,
-            )
+            return await client.options(target_url)
+            # return Response(
+            #     content=response.content,
+            #     status_code=response.status_code,
+            #     headers=response.headers,
+            # )
 
         # if request is to docs endpoints, auth is skipped
         if all(
