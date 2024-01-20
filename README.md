@@ -22,6 +22,18 @@ A FastAPI-based API that acts as a `reverse proxy`, forwarding requests to diffe
 
 - **Noise, Water, and Wind APIs**: These services are accessible only within the internal network and are not exposed externally. To interact with these APIs, requests need to be sent to the public API, which acts as a forwarder.
 
+For detailed documentation on the endpoints and processes available:
+
+| Service          | Documentation Link                                   | Description                                           |
+|------------------|------------------------------------------------------|-------------------------------------------------------|
+| Noise API        | [Documentation](https://api.city-scope.hcu-hamburg.de/cut-public-api/noise/docs) | Detailed documentation for the Noise API.            |
+| Noise API (ReDoc)| [ReDoc](https://api.city-scope.hcu-hamburg.de/cut-public-api/noise/redoc) | Interactive API documentation using ReDoc.          |
+| Noise API (OpenAPI)| [OpenAPI JSON](https://api.city-scope.hcu-hamburg.de/cut-public-api/noise/openapi.json) | OpenAPI JSON specification for the Noise API.        |
+| Stormwater API   | [Documentation](https://api.city-scope.hcu-hamburg.de/cut-public-api/stormwater/docs) | Detailed documentation for the Stormwater API.       |
+| Stormwater API (ReDoc)| [ReDoc](https://api.city-scope.hcu-hamburg.de/cut-public-api/stormwater/redoc) | Interactive API documentation using ReDoc.          |
+| Stormwater API (OpenAPI)| [OpenAPI JSON](https://api.city-scope.hcu-hamburg.de/cut-public-api/stormwater/openapi.json) | OpenAPI JSON specification for the Stormwater API.  |
+
+
 ### Important Note
 
 - **Token Signing Key**: It is crucial to ensure that the token signing key remains consistent between the User Management API and the Public API for proper functionality.
