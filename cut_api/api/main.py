@@ -51,7 +51,7 @@ VALID_RESULT_FORMATS = ["png", "geojson"]
 ROUTING_TABLE = {
     "noise": settings.external_apis.noise,
     "stormwater": settings.external_apis.water,
-    "wind": settings.external_apis.wind,
+    "infrared": settings.external_apis.infrared,   # infrared.city services for wind and sun sims.
     # "pedestrians": settings.external_apis.pedestrians,
 }
 
