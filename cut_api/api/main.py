@@ -172,7 +172,8 @@ async def custom_reverse_proxy(request: Request, call_next):
         # handle preflight requests.
         if request.method == "OPTIONS":
             return Response(
-                status_code=200
+                status_code=200,
+                headers={"Access-Control-Allow-Origin": "*"}
             )
 
         logger.info(f"Target server URL is {target_server_url}")
