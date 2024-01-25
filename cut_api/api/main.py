@@ -115,22 +115,6 @@ async def forward_request(request: Request, target_url: str):
         )
 
     async with httpx.AsyncClient() as client:
-        if request.method == "OPTIONS":
-            logger.info("Request is of type OPTIONS.")
-
-            # Set the appropriate headers for the OPTIONS request
-            request.headers[
-                "Access-Control-Allow-Origin"
-            ] = "*"
-            request.headers[
-                "Access-Control-Allow-Methods"
-            ] = "POST, GET"
-            #request.headers["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept"
-
-            return Response(
-                status_code=200,
-                headers=request.headers,
-            )
 
         # if request is to docs endpoints, auth is skipped
         if all(
@@ -185,6 +169,12 @@ async def custom_reverse_proxy(request: Request, call_next):
     logger.info(f"target server name is {target_server_name}")
 
     if target_server_url := ROUTING_TABLE.get(target_server_name):
+        # handle preflight requests.
+        if request.method == "OPTIONS":
+            return Response(
+                status_code=200
+            )
+
         logger.info(f"Target server URL is {target_server_url}")
         target_url = f"{target_server_url}{request_path}"
         logger.info(f"Target endpoint is {target_url}")
