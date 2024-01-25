@@ -118,14 +118,14 @@ async def forward_request(request: Request, target_url: str):
         if request.method == "OPTIONS":
             logger.info("Request is of type OPTIONS.")
 
-            # # Set the appropriate headers for the OPTIONS request
-            # request.headers[
-            #     "Access-Control-Allow-Origin"
-            # ] = "*"
-            # request.headers[
-            #     "Access-Control-Allow-Methods"
-            # ] = "OPTIONS, GET, POST, PUT, DELETE"
-            # request.headers["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept"
+            # Set the appropriate headers for the OPTIONS request
+            request.headers[
+                "Access-Control-Allow-Origin"
+            ] = "*"
+            request.headers[
+                "Access-Control-Allow-Methods"
+            ] = "POST, GET"
+            #request.headers["Access-Control-Allow-Headers"] = "Origin, X-Requested-With, Content-Type, Accept"
 
             return Response(
                 status_code=200,
