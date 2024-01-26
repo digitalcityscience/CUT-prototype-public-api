@@ -19,7 +19,6 @@ setup_logging()
 
 logger = logging.getLogger(__name__)
 
-
 app = FastAPI(
     title=settings.title,
     descriprition=settings.description,
@@ -38,6 +37,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+cors_headers = {
+    "Access-Control-Allow-Origin": "*",  # Replace with your desired CORS settings
+    "Access-Control-Allow-Methods": "OPTIONS, GET, POST",
+    "Access-Control-Allow-Headers": "Content-Type, x-requested-with, Authorization, Origin, Content-Type, Accept"
+}
+
 
 @app.get("/health_check", tags=["ROOT"])
 async def health_check():
@@ -45,7 +50,6 @@ async def health_check():
 
 
 VALID_RESULT_FORMATS = ["png", "geojson"]
-
 
 # If target server is not present in this routing table
 # the API will return a 404 - Not Found
@@ -58,9 +62,9 @@ ROUTING_TABLE = {
 
 
 async def register_request_event(
-    token: str,
-    endpoint: str,
-    request_logging_url: str = settings.request_logging_endpoint,
+        token: str,
+        endpoint: str,
+        request_logging_url: str = settings.request_logging_endpoint,
 ) -> None:
     try:
         headers = {
@@ -119,7 +123,7 @@ async def forward_request(request: Request, target_url: str):
 
         # if request is to docs endpoints, auth is skipped
         if all(
-            endpoint not in target_url for endpoint in ["docs", "openapi.json", "redoc"]
+                endpoint not in target_url for endpoint in ["docs", "openapi.json", "redoc"]
         ):
             try:
                 token = authorise_request(request)
@@ -155,7 +159,7 @@ async def forward_request(request: Request, target_url: str):
         return Response(
             content=response.content,
             status_code=response.status_code,
-            headers=response.headers,
+            headers=cors_headers,
         )
 
 
@@ -177,11 +181,7 @@ async def custom_reverse_proxy(request: Request, call_next):
         if request.method == "OPTIONS":
             return Response(
                 status_code=200,
-                headers={
-                    "Access-Control-Allow-Origin": "*",  # Replace with your desired CORS settings
-                    "Access-Control-Allow-Methods":  "OPTIONS, GET, POST",
-                    "Access-Control-Allow-Headers": "Content-Type, x-requested-with, Authorization, Origin, Content-Type, Accept"
-                }
+                headers=cors_headers
             )
 
         logger.info(f"Target server URL is {target_server_url}")
