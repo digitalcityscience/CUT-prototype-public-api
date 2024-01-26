@@ -178,7 +178,7 @@ async def custom_reverse_proxy(request: Request, call_next):
                 headers={
                     "Access-Control-Allow-Origin": "*",  # Replace with your desired CORS settings
                     "Access-Control-Allow-Methods":  "OPTIONS, GET, POST",
-                    "Access-Control-Allow-Headers": "Content-Type"
+                    "Access-Control-Allow-Headers": "*"
                 }
             )
 
