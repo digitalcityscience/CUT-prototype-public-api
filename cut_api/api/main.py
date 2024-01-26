@@ -172,13 +172,15 @@ async def custom_reverse_proxy(request: Request, call_next):
     if target_server_url := ROUTING_TABLE.get(target_server_name):
         # handle preflight requests.
         # TODO do we need middleware then?
+        print(f"this was the incoming request mehthod {request.method} and headers {request.headers}")
+
         if request.method == "OPTIONS":
             return Response(
                 status_code=200,
                 headers={
                     "Access-Control-Allow-Origin": "*",  # Replace with your desired CORS settings
                     "Access-Control-Allow-Methods":  "OPTIONS, GET, POST",
-                    "Access-Control-Allow-Headers": "*"
+                    "Access-Control-Allow-Headers": "Content-Type, x-requested-with, Authorization, Origin, Content-Type, Accept"
                 }
             )
 
