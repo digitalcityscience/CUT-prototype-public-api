@@ -27,6 +27,7 @@ app = FastAPI(
 )
 
 # TODO replace origins
+# TODO is this needed, if handling manually below?
 origins = ["*"]
 
 app.add_middleware(
@@ -170,10 +171,15 @@ async def custom_reverse_proxy(request: Request, call_next):
 
     if target_server_url := ROUTING_TABLE.get(target_server_name):
         # handle preflight requests.
+        # TODO do we need middleware then?
         if request.method == "OPTIONS":
             return Response(
                 status_code=200,
-                headers={"Access-Control-Allow-Origin": "*"}
+                headers={
+                    "Access-Control-Allow-Origin": "*",  # Replace with your desired CORS settings
+                    "Access-Control-Allow-Methods":  "OPTIONS, GET, POST",
+                    "Access-Control-Allow-Headers": "Content-Type"
+                }
             )
 
         logger.info(f"Target server URL is {target_server_url}")
