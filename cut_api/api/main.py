@@ -37,10 +37,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-cors_headers = {
+CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",  # Replace with your desired CORS settings
     "Access-Control-Allow-Methods": "OPTIONS, GET, POST",
-    "Access-Control-Allow-Headers": "Content-Type, x-requested-with, Authorization, Origin, Content-Type, Accept"
+    "Access-Control-Allow-Headers": "Content-Type, x-requested-with, Authorization, Origin, Content-Type, Accept",
 }
 
 
@@ -56,15 +56,14 @@ VALID_RESULT_FORMATS = ["png", "geojson"]
 ROUTING_TABLE = {
     "noise": settings.external_apis.noise,
     "stormwater": settings.external_apis.water,
-    "infrared": settings.external_apis.infrared,   # infrared.city services for wind and sun sims.
-    # "pedestrians": settings.external_apis.pedestrians,
+    "infrared": settings.external_apis.infrared,  # infrared.city services for wind and sun sims.
 }
 
 
 async def register_request_event(
-        token: str,
-        endpoint: str,
-        request_logging_url: str = settings.request_logging_endpoint,
+    token: str,
+    endpoint: str,
+    request_logging_url: str = settings.request_logging_endpoint,
 ) -> None:
     try:
         headers = {
@@ -120,10 +119,9 @@ async def forward_request(request: Request, target_url: str):
         )
 
     async with httpx.AsyncClient() as client:
-
         # if request is to docs endpoints, auth is skipped
         if all(
-                endpoint not in target_url for endpoint in ["docs", "openapi.json", "redoc"]
+            endpoint not in target_url for endpoint in ["docs", "openapi.json", "redoc"]
         ):
             try:
                 token = authorise_request(request)
@@ -159,7 +157,7 @@ async def forward_request(request: Request, target_url: str):
         return Response(
             content=response.content,
             status_code=response.status_code,
-            headers=cors_headers,
+            headers=CORS_HEADERS,
         )
 
 
@@ -176,13 +174,12 @@ async def custom_reverse_proxy(request: Request, call_next):
     if target_server_url := ROUTING_TABLE.get(target_server_name):
         # handle preflight requests.
         # TODO do we need middleware then?
-        print(f"this was the incoming request mehthod {request.method} and headers {request.headers}")
+        print(
+            f"this was the incoming request mehthod {request.method} and headers {request.headers}"
+        )
 
         if request.method == "OPTIONS":
-            return Response(
-                status_code=200,
-                headers=cors_headers
-            )
+            return Response(status_code=200, headers=CORS_HEADERS)
 
         logger.info(f"Target server URL is {target_server_url}")
         target_url = f"{target_server_url}{request_path}"
