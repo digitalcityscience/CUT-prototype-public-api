@@ -20,7 +20,7 @@ A FastAPI-based API that acts as a `reverse proxy`, forwarding requests to diffe
 | COUP Wind                                   | [Link](https://github.com/digitalcityscience/COUP-wind)    | Repository for the COUP Wind project.                       |
 
 
-- **Noise, Water, and Wind APIs**: These services are accessible only within the internal network and are not exposed externally. To interact with these APIs, requests need to be sent to the public API, which acts as a forwarder.
+- **Noise, Water, and Infrared APIs**: These services are accessible only within the internal network and are not exposed externally. To interact with these APIs, requests need to be sent to the public API, which acts as a forwarder.
 
 For detailed documentation on the endpoints and processes available:
 
@@ -38,10 +38,10 @@ For detailed documentation on the endpoints and processes available:
 
 - **Token Signing Key**: It is crucial to ensure that the token signing key remains consistent between the User Management API and the Public API for proper functionality.
 
-- **Api-specific Swagger Documentation**: Detailed documentation for each of the calculating APIs (Noise, Water, Wind) is accessible through the following endpoints:
+- **Api-specific Swagger Documentation**: Detailed documentation for each of the calculating APIs (Noise, Water, Infrared) is accessible through the following endpoints:
 - Noise API: /noise/docs
 - Water API: /water/docs
-- Wind API: /wind/docs
+- Infrared API: /infrared/docs
 Similarly, you can retrieve the OpenAPI specification and ReDoc documentation using the following endpoints:
 - OpenAPI JSON: /<api_prefix>/openapi.json
 - ReDoc: /<api_prefix>/redoc
