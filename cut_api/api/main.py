@@ -3,9 +3,7 @@ import logging
 
 import httpx
 import requests
-import uvicorn
 from fastapi import FastAPI, Request, Response, status
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from cut_api.api.responses import CutApiErrorResponse
@@ -27,15 +25,15 @@ app = FastAPI(
 
 # TODO replace origins
 # TODO is this needed, if handling manually below?
-origins = ["*"]
+# origins = ["*"]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=origins,
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",  # Replace with your desired CORS settings
@@ -189,5 +187,5 @@ async def custom_reverse_proxy(request: Request, call_next):
     return await call_next(request)
 
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=settings.port)
+# if __name__ == "__main__":
+#     uvicorn.run(app, host="0.0.0.0", port=settings.port)
