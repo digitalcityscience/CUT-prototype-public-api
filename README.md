@@ -10,7 +10,7 @@ A FastAPI-based API that acts as a `reverse proxy`, forwarding requests to diffe
 5) response format conversion (PNG, geojson).
 
 
-### Linked Repositories
+### Linked Repositories / Dependencies
 
 | Project                                     | GitHub Repository Link                                   | Description                                                |
 |---------------------------------------------|----------------------------------------------------------|------------------------------------------------------------|
