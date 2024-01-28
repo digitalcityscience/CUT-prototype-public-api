@@ -23,18 +23,6 @@ app = FastAPI(
     version=settings.version,
 )
 
-# TODO replace origins
-# TODO is this needed, if handling manually below?
-# origins = ["*"]
-
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=origins,
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",  # Replace with your desired CORS settings
     "Access-Control-Allow-Methods": "OPTIONS, GET, POST",
@@ -117,7 +105,7 @@ async def forward_request(request: Request, target_url: str):
         )
 
     async with httpx.AsyncClient() as client:
-        # if request is to docs endpoints, auth is skipped
+        # If request is to docs endpoints, auth is skipped
         if all(
             endpoint not in target_url for endpoint in ["docs", "openapi.json", "redoc"]
         ):
@@ -170,12 +158,7 @@ async def custom_reverse_proxy(request: Request, call_next):
     logger.info(f"target server name is {target_server_name}")
 
     if target_server_url := ROUTING_TABLE.get(target_server_name):
-        # handle preflight requests.
-        # TODO do we need middleware then?
-        print(
-            f"this was the incoming request mehthod {request.method} and headers {request.headers}"
-        )
-
+        # Handle preflight requests.
         if request.method == "OPTIONS":
             return Response(status_code=200, headers=CORS_HEADERS)
 
@@ -185,7 +168,3 @@ async def custom_reverse_proxy(request: Request, call_next):
         return await forward_request(request, target_url)
 
     return await call_next(request)
-
-
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="0.0.0.0", port=settings.port)
