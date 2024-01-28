@@ -17,35 +17,25 @@ A FastAPI-based API that acts as a `reverse proxy`, forwarding requests to diffe
 | CUT Prototype User Management               | [Link](https://github.com/digitalcityscience/CUT_Prototype_UserManagement) | Repository for the CUT Prototype User Management project.   |
 | COUP Noise API v2                           | [Link](https://github.com/digitalcityscience/COUP-noise-api-v2) | Repository for COUP Noise API version 2.                    |
 | COUP Stormwater API v2                      | [Link](https://github.com/digitalcityscience/COUP-stormwater-api-v2-) | Repository for COUP Stormwater API version 2.               |
-| COUP Wind                                   | [Link](https://github.com/digitalcityscience/COUP-wind)    | Repository for the COUP Wind project.                       |
+| COUP Infrared (Wind)                        | [Link](https://github.com/digitalcityscience/COUP-wind)    | Repository for the COUP Wind project.                       |
 
 
 - **Noise, Water, and Infrared APIs**: These services are accessible only within the internal network and are not exposed externally. To interact with these APIs, requests need to be sent to the public API, which acts as a forwarder.
 
-For detailed documentation on the endpoints and processes available:
+For detailed documentation on the endpoints and processes available (currently deployed):
 
-| Service          | Documentation Link                                   | Description                                           |
-|------------------|------------------------------------------------------|-------------------------------------------------------|
-| Noise API        | [Documentation](https://api.city-scope.hcu-hamburg.de/cut-public-api/noise/docs) | Detailed documentation for the Noise API.            |
-| Noise API (ReDoc)| [ReDoc](https://api.city-scope.hcu-hamburg.de/cut-public-api/noise/redoc) | Interactive API documentation using ReDoc.          |
-| Noise API (OpenAPI)| [OpenAPI JSON](https://api.city-scope.hcu-hamburg.de/cut-public-api/noise/openapi.json) | OpenAPI JSON specification for the Noise API.        |
-| Stormwater API   | [Documentation](https://api.city-scope.hcu-hamburg.de/cut-public-api/stormwater/docs) | Detailed documentation for the Stormwater API.       |
-| Stormwater API (ReDoc)| [ReDoc](https://api.city-scope.hcu-hamburg.de/cut-public-api/stormwater/redoc) | Interactive API documentation using ReDoc.          |
-| Stormwater API (OpenAPI)| [OpenAPI JSON](https://api.city-scope.hcu-hamburg.de/cut-public-api/stormwater/openapi.json) | OpenAPI JSON specification for the Stormwater API.  |
+| Service       | Swagger UI                                     | ReDoc                                                 | OpenAPI JSON                                     |
+|---------------|----------------------------------------------------------|------------------------------------------------------------|------------------------------------------------------------|
+| Noise API     | [Documentation](https://api.city-scope.hcu-hamburg.de/cut-public-api/noise/docs) | [ReDoc](https://api.city-scope.hcu-hamburg.de/cut-public-api/noise/redoc) | [OpenAPI JSON](https://api.city-scope.hcu-hamburg.de/cut-public-api/noise/openapi.json) |
+| Stormwater API| [Documentation](https://api.city-scope.hcu-hamburg.de/cut-public-api/stormwater/docs) | [ReDoc](https://api.city-scope.hcu-hamburg.de/cut-public-api/stormwater/redoc) | [OpenAPI JSON](https://api.city-scope.hcu-hamburg.de/cut-public-api/stormwater/openapi.json) |
+| Infrared API  | [Documentation](https://api.city-scope.hcu-hamburg.de/cut-public-api/infrared/docs) | [ReDoc](https://api.city-scope.hcu-hamburg.de/cut-public-api/infrared/redoc) | [OpenAPI JSON](https://api.city-scope.hcu-hamburg.de/cut-public-api/infrared/openapi.json) |
+| User API      | [Documentation](https://api.city-scope.hcu-hamburg.de/users/docs) | [ReDoc](https://api.city-scope.hcu-hamburg.de/users/redoc)                                                          | [OpenAPI JSON](https://api.city-scope.hcu-hamburg.de/users/openapi.json)                                                         |
+
 
 
 ### Important Note
 
 - **Token Signing Key**: It is crucial to ensure that the token signing key remains consistent between the User Management API and the Public API for proper functionality.
-
-- **Api-specific Swagger Documentation**: Detailed documentation for each of the calculating APIs (Noise, Water, Infrared) is accessible through the following endpoints:
-- Noise API: /noise/docs
-- Water API: /water/docs
-- Infrared API: /infrared/docs
-Similarly, you can retrieve the OpenAPI specification and ReDoc documentation using the following endpoints:
-- OpenAPI JSON: /<api_prefix>/openapi.json
-- ReDoc: /<api_prefix>/redoc
-This provides a clearer and more organized presentation of the information about the API-specific Swagger Documentation.
 
 
 ## Local Dev
