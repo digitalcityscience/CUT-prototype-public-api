@@ -8,7 +8,7 @@ router = APIRouter(tags=["ogc"])
 
 
 @router.get("/processes")
-async def get_processes_json(process_id: str = None) -> dict:
+async def get_processes_json() -> dict:
     processes = []
 
     for service in ROUTING_TABLE:
