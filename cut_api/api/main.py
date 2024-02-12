@@ -12,6 +12,9 @@ from cut_api.config import settings
 from cut_api.dependencies import LIMITER, authorise_request
 from cut_api.logs import setup_logging
 from cut_api.utils import geojson_to_rasterized_png
+from cut_api.api.ogc_descriptions import router as ogc_router
+from cut_api.api.routing_table import ROUTING_TABLE
+
 
 setup_logging()
 
@@ -29,6 +32,8 @@ CORS_HEADERS = {
     "Access-Control-Allow-Headers": "Content-Type, x-requested-with, Authorization, Origin, Content-Type, Accept",
 }
 
+app.include_router(ogc_router)
+
 
 @app.get("/health_check", tags=["ROOT"])
 async def health_check():
@@ -36,14 +41,6 @@ async def health_check():
 
 
 VALID_RESULT_FORMATS = ["png", "geojson"]
-
-# If target server is not present in this routing table
-# the API will return a 404 - Not Found
-ROUTING_TABLE = {
-    "noise": settings.external_apis.noise,
-    "stormwater": settings.external_apis.water,
-    "infrared": settings.external_apis.infrared,  # infrared.city services for wind and sun sims.
-}
 
 
 async def register_request_event(
@@ -115,6 +112,7 @@ async def forward_request(request: Request, target_url: str):
                 return JSONResponse(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     content=CutApiErrorResponse(message=exc.message).dict(),
+                    # TODO: more information on how to authenticate?
                 )
 
             await register_request_event(token, target_url)
@@ -151,8 +149,13 @@ async def forward_request(request: Request, target_url: str):
 async def custom_reverse_proxy(request: Request, call_next):
     # TODO this is a temp fix due to the nginx configs, in an ideal scenario
     # cut-public-api should be served at root, but is currently served at /cut-public-api
+
     request_path = request.url.path.replace("/cut-public-api", "")
     logger.info(f"Request path is {request_path}")
+
+    # OGC description requests
+    if request.method in ["/", "/processes", "/conformance"]:
+        return await call_next(request)
 
     target_server_name = request_path.split("/")[1]
     logger.info(f"target server name is {target_server_name}")
