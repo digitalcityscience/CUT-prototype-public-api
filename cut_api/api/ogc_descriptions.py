@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 import httpx
 
-from routing_table import ROUTING_TABLE
+from cut_api.api.routing_table import ROUTING_TABLE
 
 
 router = APIRouter(tags=["ogc"])
