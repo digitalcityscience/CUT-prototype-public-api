@@ -36,6 +36,8 @@ class CacheRedis(BaseSettings):
 
 class Auth(BaseSettings):
     token_signing_key: str = Field(..., env="TOKEN_SIGNING_KEY", min_length=1)
+    token_url: str = Field(..., env="USER_AUTH_URL", min_length=1)
+    auth_docs: str = Field(..., env="AUTH_DOCS_URL", min_length=1)
 
 
 class ExternalAPIs(BaseSettings):
