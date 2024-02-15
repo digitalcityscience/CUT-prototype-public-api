@@ -134,8 +134,8 @@ async def forward_request(request: Request, target_url: str):
 
     async with httpx.AsyncClient() as client:
         # If request is to docs endpoints, auth is skipped
-        if all(
-            endpoint not in target_url for endpoint in ["docs", "openapi.json", "redoc"]
+        if any(
+            endpoint in target_url for endpoint in ["execution", "jobs"]
         ):
             try:
                 token = authorise_request(request)
@@ -171,8 +171,8 @@ async def forward_request(request: Request, target_url: str):
                     )
 
         response_headers = CORS_HEADERS
-        if location_header := response.headers.get("location", None):
-            response_headers["location"] = location_header
+        if location_header := response.headers.get("Location", None):
+            response_headers["Location"] = location_header
 
         return Response(
             content=response.content,
