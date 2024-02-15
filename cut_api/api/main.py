@@ -62,6 +62,7 @@ CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",  # Replace with your desired CORS settings
     "Access-Control-Allow-Methods": "OPTIONS, GET, POST",
     "Access-Control-Allow-Headers": "Content-Type, x-requested-with, Authorization, Origin, Content-Type, Accept",
+    "Content-Type": "application/json",
 }
 
 
@@ -168,10 +169,15 @@ async def forward_request(request: Request, target_url: str):
                         if desired_result_format.lower() not in VALID_RESULT_FORMATS
                         else await prepare_response(desired_result_format, response)
                     )
+
+        response_headers = CORS_HEADERS
+        if location_header := response.headers.get("location", None):
+            response_headers["location"] = location_header
+
         return Response(
             content=response.content,
             status_code=response.status_code,
-            headers=CORS_HEADERS,
+            headers=response_headers,
         )
 
 
