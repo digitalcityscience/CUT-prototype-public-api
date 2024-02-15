@@ -133,7 +133,10 @@ async def forward_request(request: Request, target_url: str):
         )
 
     async with httpx.AsyncClient() as client:
-        # If request is to docs endpoints, auth is skipped
+
+        response_headers = CORS_HEADERS
+
+        # Authorize requests to job stati, job results and job execution.
         if any(
             endpoint in target_url for endpoint in ["execution", "jobs"]
         ):
@@ -154,10 +157,15 @@ async def forward_request(request: Request, target_url: str):
             response = await client.request(
                 request.method, target_url, json=request_json
             )
+            # OGC Processes Requirement 34 | /req/core/process-execute-success-async  set location header
+            if location_header := response.headers.get("Location", None):
+                response_headers["Location"] = location_header
+
         elif request.method == "GET":
             response = await client.request(request.method, target_url)
 
             if "results" in target_url:
+                # get result and format to desired format.
                 if desired_result_format := request.query_params.get("result_format"):
                     return (
                         JSONResponse(
@@ -170,9 +178,11 @@ async def forward_request(request: Request, target_url: str):
                         else await prepare_response(desired_result_format, response)
                     )
 
-        response_headers = CORS_HEADERS
-        if location_header := response.headers.get("Location", None):
-            response_headers["Location"] = location_header
+            # If request is to docs endpoints, doctype is HTML
+            if any(
+                    endpoint in target_url for endpoint in ["docs", "redoc"]
+            ):
+                response_headers["Content-Type"] = "text/html; charset=utf-8"
 
         return Response(
             content=response.content,
